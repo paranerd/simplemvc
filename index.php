@@ -1,41 +1,25 @@
 <?php
 
-//require_once 'modules/helper/Facades/Request.php';
-//require_once 'modules/helper/Facades/Response.php';
-//require_once 'modules/helper/BaseController.php';
-//require_once 'modules/helper/global.php';
-require_once 'helper/Test.php';
+require_once 'app/autoload.php';
 
-/*$request      = (isset($_REQUEST['request'])) ? $_REQUEST['request'] : null;
-$args         = ($request) ? explode('/', rtrim($request, '/')) : array();
-$render       = (sizeof($args) == 0 || $args[0] != 'api') ? true : array_shift($args) == null;
-$token_source = ($render) ? $_COOKIE : $_REQUEST;
-$module       = (sizeof($args) > 0) ? array_shift($args) : 'core';
-$action       = (sizeof($args) > 0) ? array_shift($args) : 'index';
-$controller   = ucfirst($module) . "_Controller";*/
+use SimpleMVC\Services\Request;
+use SimpleMVC\Services\Response;
 
-//echo RequestFacade::test() . "\n";
-//echo ResponseFacade::test();
+$module = Request::get()->module();
+$controller = Request::get()->controller();
+$action = Request::get()->action();
 
-echo Test::get()->execute() . "\n";
-echo Test::get()->execute() . "\n";
+file_put_contents('/var/www/html/simplemvc/my.log', $module . "\n", FILE_APPEND);
 
-$test = new Test();
-echo $test->execute();
-exit();
-
-$req = Request::get_instance();
-file_put_contents('/var/www/html/simplemvc/my.log', var_dump($req) . "\n", FILE_APPEND);
-
-if (file_exists('modules/' . Request::module() . '/controller.php')) {
+if (file_exists('app/Modules/' . $module . '/controller.php')) {
 	try {
-		require_once 'modules/' . $module . '/controller.php';
+		require_once 'app/Modules/' . $module . '/controller.php';
 		$c = new $controller();
 		exit($c->$action());
-	} catch (Exception $e) {
-		exit(Response::error($e->getMessage, $e->getCode));
+	} catch (\Exception $e) {
+		exit(Response::get()->error($e->getMessage(), $e->getCode()));
 	}
 }
 
 // If we get here, an error occurred
-exit(Response::error('The requested site could not be found...', 404));
+exit(Response::get()->error('The requested site could not be found...', 404));
